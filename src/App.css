@@ -146,15 +146,22 @@ td {
   flex-wrap: wrap;
 }
 
+.card-detail-image {
+  resize: horizontal;
+  overflow: hidden;
+  width: 320px;
+  min-width: 160px;
+  max-width: 560px;
+}
 .card-detail-image img {
-  width: 240px;
+  width: 100%;
   border-radius: 12px;
   box-shadow: var(--shadow);
   display: block;
 }
 .card-img-placeholder {
-  width: 240px;
-  height: 336px;
+  width: 100%;
+  aspect-ratio: 2/3;
   border-radius: 12px;
   background: var(--border);
 }

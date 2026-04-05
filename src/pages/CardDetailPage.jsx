@@ -6,6 +6,17 @@ import {
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://tcgdex-api-production.up.railway.app');
 
+function cardImageUrl(card) {
+  return card.tcgdex_image_url ?? card.image_url ?? null;
+}
+
+function CardImage({ card }) {
+  const [failed, setFailed] = useState(false);
+  const src = cardImageUrl(card);
+  if (!src || failed) return <div className="card-img-placeholder" />;
+  return <img src={src} alt={card.name} onError={() => setFailed(true)} />;
+}
+
 const VARIANT_COLORS = {
   'Normal':           '#aa3bff',
   'Holofoil':         '#f59e0b',
@@ -100,10 +111,7 @@ export default function CardDetailPage() {
 
       <div className="card-detail">
         <div className="card-detail-image">
-          {card.image_url
-            ? <img src={card.image_url} alt={card.name} />
-            : <div className="card-img-placeholder" />
-          }
+          <CardImage card={card} />
         </div>
 
         <div className="card-detail-info">

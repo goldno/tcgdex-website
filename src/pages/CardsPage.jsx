@@ -3,6 +3,24 @@ import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://tcgdex-api-production.up.railway.app');
 
+function cardImageUrl(card) {
+  return card.tcgdex_image_url ?? card.image_url ?? null;
+}
+
+function CardThumb({ card }) {
+  const [failed, setFailed] = useState(false);
+  const src = cardImageUrl(card);
+  if (!src || failed) return <div className="card-thumb placeholder" />;
+  return (
+    <img
+      src={src}
+      alt={card.name}
+      className="card-thumb"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 const COLUMNS = [
   { key: 'name',             label: 'Name' },
   { key: 'set_name',         label: 'Set' },
@@ -20,7 +38,7 @@ export default function CardsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [setFilter, setSetFilter] = useState('');
-  const [sort, setSort] = useState({ field: 'set_name', dir: 'asc' });
+  const [sort, setSort] = useState({ field: 'group_id', dir: 'desc' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,8 +63,15 @@ export default function CardsPage() {
   }, [search]);
 
   const sets = useMemo(() => {
-    const s = [...new Set(cards.map(c => c.set_name))].filter(Boolean);
-    return s.sort((a, b) => a.localeCompare(b));
+    const byName = {};
+    for (const c of cards) {
+      if (c.set_name && (!byName[c.set_name] || c.group_id > byName[c.set_name])) {
+        byName[c.set_name] = c.group_id;
+      }
+    }
+    return Object.entries(byName)
+      .sort((a, b) => b[1] - a[1]) // newest first
+      .map(([name]) => name);
   }, [cards]);
 
   const displayed = useMemo(() => {
@@ -131,10 +156,7 @@ export default function CardsPage() {
               {displayed.map(card => (
                 <tr key={card.product_id} onClick={() => navigate(`/cards/${card.product_id}`)}>
                   <td className="thumb-cell">
-                    {card.image_url
-                      ? <img src={card.image_url} alt={card.name} className="card-thumb" />
-                      : <div className="card-thumb placeholder" />
-                    }
+                    <CardThumb card={card} />
                   </td>
                   <td className="name-cell">{card.name}</td>
                   <td>{card.set_name}</td>
