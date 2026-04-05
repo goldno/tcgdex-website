@@ -98,7 +98,8 @@ export default function CardsPage() {
           TCGDex tracks high-rarity Pokémon TCG cards and their market prices over time.
           Browse the full card list, filter by set, and click any card to view a detailed
           price history chart. Prices are sourced from TCGPlayer and update automatically
-          every day at 4 PM EST.
+          every day at 4 PM EST. Price tracking started on 4/2/26, cards will not have price data before then. 
+          Data for new sets will be automatically tracked when they are released.
         </p>
       </div>
 
