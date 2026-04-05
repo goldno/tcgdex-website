@@ -1,0 +1,206 @@
+/* ── Page shell ── */
+.page {
+  padding: 32px 0 64px;
+}
+
+/* ── Cards page header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg2);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search:focus { border-color: var(--accent); }
+
+/* ── Table ── */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+tbody tr:hover { background: var(--bg2); }
+tbody tr + tr td { border-top: 1px solid var(--border); }
+
+td {
+  padding: 10px 14px;
+  color: var(--text-h);
+  vertical-align: middle;
+}
+
+.thumb-cell { width: 56px; padding: 6px 10px; }
+.card-thumb {
+  width: 40px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 4px;
+  display: block;
+}
+.card-thumb.placeholder {
+  background: var(--border);
+}
+
+.name-cell { font-weight: 500; }
+.num-cell   { color: var(--text); }
+
+/* ── Status / error ── */
+.status { text-align: center; padding: 48px 0; color: var(--text); }
+.error  { text-align: center; padding: 48px 0; color: #ef4444; }
+
+/* ── Back button ── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 28px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Card detail layout ── */
+.card-detail {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+
+.card-detail-image img {
+  width: 240px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: block;
+}
+.card-img-placeholder {
+  width: 240px;
+  height: 336px;
+  border-radius: 12px;
+  background: var(--border);
+}
+
+.card-detail-info {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Meta dl ── */
+.card-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 20px;
+  margin: 0;
+  font-size: 15px;
+}
+.card-meta dt {
+  color: var(--text);
+  font-weight: 500;
+}
+.card-meta dd {
+  margin: 0;
+  color: var(--text-h);
+}
+
+/* ── Price pills ── */
+.price-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.price-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg2);
+  min-width: 100px;
+}
+.pill-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.pill-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+/* ── TCGPlayer button ── */
+.tcgplayer-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s;
+  align-self: flex-start;
+}
+.tcgplayer-btn:hover { background: var(--accent-hover); }
+
+/* ── Chart section ── */
+.chart-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.chart-section h2 {
+  margin-bottom: 20px;
+}
