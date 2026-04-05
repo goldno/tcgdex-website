@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -7,13 +7,19 @@ import {
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://tcgdex-api-production.up.railway.app');
 
 const VARIANT_COLORS = {
-  'Normal':            '#aa3bff',
-  'Holofoil':          '#f59e0b',
-  'Reverse Holofoil':  '#06b6d4',
+  'Normal':           '#aa3bff',
+  'Holofoil':         '#f59e0b',
+  'Reverse Holofoil': '#06b6d4',
 };
 
+const RANGES = [
+  { label: '7D',  days: 7 },
+  { label: '30D', days: 30 },
+  { label: '90D', days: 90 },
+  { label: 'All', days: null },
+];
+
 function buildChartData(snapshots) {
-  // Group by date, pivot sub_type_name into columns
   const byDate = {};
   for (const row of snapshots) {
     if (!byDate[row.snapshot_date]) byDate[row.snapshot_date] = { date: row.snapshot_date };
@@ -29,6 +35,7 @@ export default function CardDetailPage() {
   const [prices, setPrices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [range, setRange] = useState('All');
 
   useEffect(() => {
     setLoading(true);
@@ -48,20 +55,44 @@ export default function CardDetailPage() {
       });
   }, [id]);
 
+  const allChartData = useMemo(() => buildChartData(prices), [prices]);
+  const variants = useMemo(() => [...new Set(prices.map(p => p.sub_type_name))], [prices]);
+
+  const chartData = useMemo(() => {
+    const days = RANGES.find(r => r.label === range)?.days;
+    if (!days || allChartData.length === 0) return allChartData;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    return allChartData.filter(d => d.date >= cutoffStr);
+  }, [allChartData, range]);
+
+  const yDomain = useMemo(() => {
+    const vals = chartData.flatMap(d => variants.map(v => d[v]).filter(v => v != null));
+    if (vals.length === 0) return ['auto', 'auto'];
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const pad = (max - min) * 0.1 || max * 0.05;
+    return [
+      parseFloat((min - pad).toFixed(2)),
+      parseFloat((max + pad).toFixed(2)),
+    ];
+  }, [chartData, variants]);
+
+  const latestByVariant = useMemo(() => {
+    const result = {};
+    for (const row of prices) {
+      if (!result[row.sub_type_name] ||
+          row.snapshot_date > result[row.sub_type_name].snapshot_date) {
+        result[row.sub_type_name] = row;
+      }
+    }
+    return result;
+  }, [prices]);
+
   if (loading) return <div className="page"><p className="status">Loading…</p></div>;
   if (error)   return <div className="page"><p className="error">{error}</p></div>;
   if (!card)   return null;
-
-  const chartData = buildChartData(prices);
-  const variants = [...new Set(prices.map(p => p.sub_type_name))];
-
-  const latestByVariant = {};
-  for (const row of prices) {
-    if (!latestByVariant[row.sub_type_name] ||
-        row.snapshot_date > latestByVariant[row.sub_type_name].snapshot_date) {
-      latestByVariant[row.sub_type_name] = row;
-    }
-  }
 
   return (
     <div className="page">
@@ -78,8 +109,8 @@ export default function CardDetailPage() {
         <div className="card-detail-info">
           <h1>{card.name}</h1>
           <dl className="card-meta">
-            <dt>Set</dt>       <dd>{card.set_name}</dd>
-            <dt>Number</dt>    <dd>{card.collector_number}/{card.set_total}</dd>
+            <dt>Set</dt>    <dd>{card.set_name}</dd>
+            <dt>Number</dt> <dd>{card.collector_number}/{card.set_total}</dd>
             {card.rarity && <><dt>Rarity</dt><dd>{card.rarity}</dd></>}
           </dl>
 
@@ -102,9 +133,22 @@ export default function CardDetailPage() {
         </div>
       </div>
 
-      {chartData.length > 0 && (
+      {allChartData.length > 0 && (
         <div className="chart-section">
-          <h2>Price History</h2>
+          <div className="chart-header">
+            <h2>Price History</h2>
+            <div className="range-buttons">
+              {RANGES.map(r => (
+                <button
+                  key={r.label}
+                  className={`range-btn${range === r.label ? ' active' : ''}`}
+                  onClick={() => setRange(r.label)}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={chartData} margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -114,8 +158,9 @@ export default function CardDetailPage() {
                 tickFormatter={d => d.slice(0, 10)}
               />
               <YAxis
+                domain={yDomain}
                 tick={{ fontSize: 12, fill: 'var(--text)' }}
-                tickFormatter={v => `$${v}`}
+                tickFormatter={v => `$${Number(v).toFixed(0)}`}
                 width={56}
               />
               <Tooltip

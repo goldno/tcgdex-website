@@ -102,6 +102,19 @@ td {
 .name-cell { font-weight: 500; }
 .num-cell   { color: var(--text); }
 
+/* ── About ── */
+.about {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg2);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.about p { margin: 0; }
+
 /* ── Status / error ── */
 .status { text-align: center; padding: 48px 0; color: var(--text); }
 .error  { text-align: center; padding: 48px 0; color: #ef4444; }
@@ -222,6 +235,35 @@ td {
   border-radius: 12px;
   padding: 24px;
 }
-.chart-section h2 {
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 20px;
+}
+
+.range-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.range-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.range-btn:hover { border-color: var(--accent); color: var(--accent); }
+.range-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }

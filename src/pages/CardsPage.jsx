@@ -93,6 +93,15 @@ export default function CardsPage() {
         )}
       </header>
 
+      <div className="about">
+        <p>
+          TCGDex tracks high-rarity Pokémon TCG cards and their market prices over time.
+          Browse the full card list, filter by set, and click any card to view a detailed
+          price history chart. Prices are sourced from TCGPlayer and update automatically
+          every day at 4 PM EST.
+        </p>
+      </div>
+
       {loading ? (
         <p className="status">Loading…</p>
       ) : error ? (

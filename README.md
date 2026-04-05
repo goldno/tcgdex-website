@@ -1,16 +1,52 @@
-# React + Vite
+# TCGDex Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web app for browsing and tracking Pokémon TCG card prices over time.
 
-Currently, two official plugins are available:
+Live site: https://goldno.github.io/tcgdex-website/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Browse all tracked high-rarity Pokémon TCG cards
+- Search cards by name
+- Filter by set and sort by any column
+- Click a card to view its details and a price history chart (Normal, Holofoil, Reverse Holofoil variants)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Architecture
 
-## Expanding the ESLint configuration
+```
+Browser (React app on GitHub Pages)
+        ↓  fetch()
+Railway API (Express + PostgreSQL)
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The frontend is a static React app hosted on GitHub Pages. It calls the TCGDex API directly — there is no separate backend for the website.
+
+| Layer | Tech | Host |
+|---|---|---|
+| Frontend | React + Vite | GitHub Pages |
+| API | Express (Node.js) | Railway |
+| Database | PostgreSQL | Railway |
+
+The Railway API also runs background cron jobs:
+- Daily price sync at 21:00 UTC
+- Weekly card discovery every Monday at 22:00 UTC
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+The dev server proxies `/api/*` to the Railway API, so no local API setup is needed.
+
+## Deployment
+
+The site deploys automatically to GitHub Pages via GitHub Actions on every push to `main`.
+
+To deploy manually:
+```bash
+npm run build
+```
+
+The `VITE_API_URL` environment variable can override the API base URL (defaults to the Railway API in production).
