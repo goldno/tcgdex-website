@@ -6,4 +6,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/tcgdex-website/',
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://tcgdex-api-production.up.railway.app',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })

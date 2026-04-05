@@ -4,7 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const API = import.meta.env.VITE_API_URL || 'https://tcgdex-api-production.up.railway.app';
+const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://tcgdex-api-production.up.railway.app');
 
 const VARIANT_COLORS = {
   'Normal':            '#aa3bff',

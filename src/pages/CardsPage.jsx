@@ -1,13 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API = import.meta.env.VITE_API_URL || 'https://tcgdex-api-production.up.railway.app';
+const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://tcgdex-api-production.up.railway.app');
+
+const COLUMNS = [
+  { key: 'name',             label: 'Name' },
+  { key: 'set_name',         label: 'Set' },
+  { key: 'collector_number', label: '#' },
+  { key: 'rarity',           label: 'Rarity' },
+];
+
+function SortIcon({ dir }) {
+  return <span className="sort-icon">{dir === 'asc' ? '↑' : '↓'}</span>;
+}
 
 export default function CardsPage() {
   const [cards, setCards] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [setFilter, setSetFilter] = useState('');
+  const [sort, setSort] = useState({ field: 'set_name', dir: 'asc' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,6 +44,32 @@ export default function CardsPage() {
     return () => { clearTimeout(delay); controller.abort(); };
   }, [search]);
 
+  const sets = useMemo(() => {
+    const s = [...new Set(cards.map(c => c.set_name))].filter(Boolean);
+    return s.sort((a, b) => a.localeCompare(b));
+  }, [cards]);
+
+  const displayed = useMemo(() => {
+    let result = setFilter ? cards.filter(c => c.set_name === setFilter) : cards;
+    result = [...result].sort((a, b) => {
+      const av = a[sort.field] ?? '';
+      const bv = b[sort.field] ?? '';
+      const cmp = typeof av === 'number'
+        ? av - bv
+        : String(av).localeCompare(String(bv));
+      return sort.dir === 'asc' ? cmp : -cmp;
+    });
+    return result;
+  }, [cards, setFilter, sort]);
+
+  function handleSort(field) {
+    setSort(prev =>
+      prev.field === field
+        ? { field, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+        : { field, dir: 'asc' }
+    );
+  }
+
   return (
     <div className="page">
       <header className="page-header">
@@ -42,13 +81,23 @@ export default function CardsPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+        {sets.length > 0 && (
+          <select
+            className="set-filter"
+            value={setFilter}
+            onChange={e => setSetFilter(e.target.value)}
+          >
+            <option value="">All sets</option>
+            {sets.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        )}
       </header>
-
-      {error && <p className="error">{error}</p>}
 
       {loading ? (
         <p className="status">Loading…</p>
-      ) : cards.length === 0 ? (
+      ) : error ? (
+        <p className="error">{error}</p>
+      ) : displayed.length === 0 ? (
         <p className="status">No cards found.</p>
       ) : (
         <div className="table-wrap">
@@ -56,14 +105,20 @@ export default function CardsPage() {
             <thead>
               <tr>
                 <th></th>
-                <th>Name</th>
-                <th>Set</th>
-                <th>#</th>
-                <th>Rarity</th>
+                {COLUMNS.map(col => (
+                  <th
+                    key={col.key}
+                    className="sortable"
+                    onClick={() => handleSort(col.key)}
+                  >
+                    {col.label}
+                    {sort.field === col.key && <SortIcon dir={sort.dir} />}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {cards.map(card => (
+              {displayed.map(card => (
                 <tr key={card.product_id} onClick={() => navigate(`/cards/${card.product_id}`)}>
                   <td className="thumb-cell">
                     {card.image_url
