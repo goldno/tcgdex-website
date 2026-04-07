@@ -99,8 +99,9 @@ td {
   background: var(--border);
 }
 
-.name-cell { font-weight: 500; }
+.name-cell  { font-weight: 500; }
 .num-cell   { color: var(--text); }
+.price-cell { font-weight: 600; color: var(--text-h); }
 
 /* ── About ── */
 .about {

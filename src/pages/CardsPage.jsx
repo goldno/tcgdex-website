@@ -22,10 +22,11 @@ function CardThumb({ card }) {
 }
 
 const COLUMNS = [
-  { key: 'name',             label: 'Name' },
-  { key: 'set_name',         label: 'Set' },
-  { key: 'collector_number', label: '#' },
-  { key: 'rarity',           label: 'Rarity' },
+  { key: 'name',             label: 'Name',   noSort: true },
+  { key: 'set_name',         label: 'Set',    noSort: true },
+  { key: 'collector_number', label: '#',      noSort: true },
+  { key: 'rarity',           label: 'Rarity', noSort: true },
+  { key: 'latest_price',     label: 'Price' },
 ];
 
 function SortIcon({ dir }) {
@@ -79,8 +80,9 @@ export default function CardsPage() {
     result = [...result].sort((a, b) => {
       const av = a[sort.field] ?? '';
       const bv = b[sort.field] ?? '';
-      const cmp = typeof av === 'number'
-        ? av - bv
+      const numericFields = ['collector_number', 'group_id', 'latest_price'];
+      const cmp = numericFields.includes(sort.field)
+        ? parseFloat(av) - parseFloat(bv)
         : String(av).localeCompare(String(bv));
       return sort.dir === 'asc' ? cmp : -cmp;
     });
@@ -123,7 +125,7 @@ export default function CardsPage() {
           TCGDex tracks high-rarity Pokémon TCG cards and their market prices over time.
           Browse the full card list, filter by set, and click any card to view a detailed
           price history chart. Prices are sourced from TCGPlayer and update automatically
-          every day at 4 PM EST. Price tracking started on 4/2/26, cards will not have price data before then. 
+          every day at 4 PM EST. Price tracking started on 2/8/24, cards will not have price data before then. 
           Data for new sets will be automatically tracked when they are released.
         </p>
       </div>
@@ -143,11 +145,11 @@ export default function CardsPage() {
                 {COLUMNS.map(col => (
                   <th
                     key={col.key}
-                    className="sortable"
-                    onClick={() => handleSort(col.key)}
+                    className={col.noSort ? '' : 'sortable'}
+                    onClick={col.noSort ? undefined : () => handleSort(col.key)}
                   >
                     {col.label}
-                    {sort.field === col.key && <SortIcon dir={sort.dir} />}
+                    {!col.noSort && sort.field === col.key && <SortIcon dir={sort.dir} />}
                   </th>
                 ))}
               </tr>
@@ -162,6 +164,9 @@ export default function CardsPage() {
                   <td>{card.set_name}</td>
                   <td className="num-cell">{card.collector_number}/{card.set_total}</td>
                   <td>{card.rarity ?? '—'}</td>
+                  <td className="price-cell">
+                    {card.latest_price != null ? `$${parseFloat(card.latest_price).toFixed(2)}` : '—'}
+                  </td>
                 </tr>
               ))}
             </tbody>
