@@ -80,8 +80,7 @@ export default function CardsPage() {
     result = [...result].sort((a, b) => {
       const av = a[sort.field] ?? '';
       const bv = b[sort.field] ?? '';
-      const numericFields = ['collector_number', 'group_id', 'latest_price'];
-      const cmp = numericFields.includes(sort.field)
+      const cmp = sort.field === 'latest_price'
         ? parseFloat(av) - parseFloat(bv)
         : String(av).localeCompare(String(bv));
       return sort.dir === 'asc' ? cmp : -cmp;
