@@ -68,7 +68,7 @@ export default function CardsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [setFilter, setSetFilter] = useState('');
-  const [sort, setSort] = useState({ field: 'group_id', dir: 'desc' });
+  const [sort, setSort] = useState({ field: 'latest_price', dir: 'desc' });
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
