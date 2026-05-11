@@ -120,6 +120,31 @@ td {
 .status { text-align: center; padding: 48px 0; color: var(--text); }
 .error  { text-align: center; padding: 48px 0; color: #ef4444; }
 
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+}
+.pagination button {
+  padding: 6px 12px;
+  min-width: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.pagination button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.pagination button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+.page-ellipsis { color: var(--text); padding: 0 4px; }
+
 /* ── Back button ── */
 .back-btn {
   display: inline-flex;

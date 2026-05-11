@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://tcgdex-api-production.up.railway.app');
@@ -21,6 +21,35 @@ function CardThumb({ card }) {
   );
 }
 
+const PAGE_SIZE = 50;
+
+function Pagination({ page, pageCount, onPage }) {
+  if (pageCount <= 1) return null;
+
+  const pages = [];
+  if (pageCount <= 7) {
+    for (let i = 1; i <= pageCount; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (page > 3) pages.push('...');
+    for (let i = Math.max(2, page - 1); i <= Math.min(pageCount - 1, page + 1); i++) pages.push(i);
+    if (page < pageCount - 2) pages.push('...');
+    pages.push(pageCount);
+  }
+
+  return (
+    <div className="pagination">
+      <button disabled={page === 1} onClick={() => onPage(page - 1)}>←</button>
+      {pages.map((p, i) =>
+        p === '...'
+          ? <span key={`e${i}`} className="page-ellipsis">…</span>
+          : <button key={p} className={p === page ? 'active' : ''} onClick={() => onPage(p)}>{p}</button>
+      )}
+      <button disabled={page === pageCount} onClick={() => onPage(page + 1)}>→</button>
+    </div>
+  );
+}
+
 const COLUMNS = [
   { key: 'name',             label: 'Name',   noSort: true },
   { key: 'set_name',         label: 'Set',    noSort: true },
@@ -40,6 +69,7 @@ export default function CardsPage() {
   const [error, setError] = useState(null);
   const [setFilter, setSetFilter] = useState('');
   const [sort, setSort] = useState({ field: 'group_id', dir: 'desc' });
+  const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,6 +105,8 @@ export default function CardsPage() {
       .map(([name]) => name);
   }, [cards]);
 
+  useEffect(() => { setPage(1); }, [search, setFilter, sort]);
+
   const displayed = useMemo(() => {
     let result = setFilter ? cards.filter(c => c.set_name === setFilter) : cards;
     result = [...result].sort((a, b) => {
@@ -87,6 +119,9 @@ export default function CardsPage() {
     });
     return result;
   }, [cards, setFilter, sort]);
+
+  const pageCount = Math.ceil(displayed.length / PAGE_SIZE);
+  const pageCards = displayed.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   function handleSort(field) {
     setSort(prev =>
@@ -136,6 +171,7 @@ export default function CardsPage() {
       ) : displayed.length === 0 ? (
         <p className="status">No cards found.</p>
       ) : (
+        <>
         <div className="table-wrap">
           <table>
             <thead>
@@ -154,7 +190,7 @@ export default function CardsPage() {
               </tr>
             </thead>
             <tbody>
-              {displayed.map(card => (
+              {pageCards.map(card => (
                 <tr key={card.product_id} onClick={() => navigate(`/cards/${card.product_id}`)}>
                   <td className="thumb-cell">
                     <CardThumb card={card} />
@@ -171,6 +207,8 @@ export default function CardsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination page={page} pageCount={pageCount} onPage={setPage} />
+        </>
       )}
     </div>
   );
