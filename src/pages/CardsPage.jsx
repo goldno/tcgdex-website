@@ -126,7 +126,7 @@ export default function CardsPage() {
       return sort.dir === 'asc' ? cmp : -cmp;
     });
     return result;
-  }, [cards, setFilter, sort]);
+  }, [cards, setFilter, rarityFilter, sort]);
 
   const pageCount = Math.ceil(displayed.length / PAGE_SIZE);
   const pageCards = displayed.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
