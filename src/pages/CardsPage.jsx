@@ -68,6 +68,7 @@ export default function CardsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [setFilter, setSetFilter] = useState('');
+  const [rarityFilter, setRarityFilter] = useState('');
   const [sort, setSort] = useState({ field: 'latest_price', dir: 'desc' });
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
@@ -105,10 +106,17 @@ export default function CardsPage() {
       .map(([name]) => name);
   }, [cards]);
 
-  useEffect(() => { setPage(1); }, [search, setFilter, sort]);
+  const rarities = useMemo(() => {
+    const seen = new Set();
+    for (const c of cards) if (c.rarity) seen.add(c.rarity);
+    return [...seen].sort();
+  }, [cards]);
+
+  useEffect(() => { setPage(1); }, [search, setFilter, rarityFilter, sort]);
 
   const displayed = useMemo(() => {
     let result = setFilter ? cards.filter(c => c.set_name === setFilter) : cards;
+    if (rarityFilter) result = result.filter(c => c.rarity === rarityFilter);
     result = [...result].sort((a, b) => {
       const av = a[sort.field] ?? '';
       const bv = b[sort.field] ?? '';
@@ -150,6 +158,16 @@ export default function CardsPage() {
           >
             <option value="">All sets</option>
             {sets.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        )}
+        {rarities.length > 0 && (
+          <select
+            className="set-filter"
+            value={rarityFilter}
+            onChange={e => setRarityFilter(e.target.value)}
+          >
+            <option value="">All rarities</option>
+            {rarities.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
         )}
       </header>
