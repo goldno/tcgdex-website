@@ -44,6 +44,8 @@ export default function CardDetailPage() {
   const navigate = useNavigate();
   const [card, setCard] = useState(null);
   const [prices, setPrices] = useState([]);
+  const [supportData, setSupportData] = useState(null);
+  const [momentumData, setMomentumData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [range, setRange] = useState('All');
@@ -51,13 +53,20 @@ export default function CardDetailPage() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    Promise.all([
-      fetch(`${API}/cards/${id}`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-      fetch(`${API}/cards/${id}/prices`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-    ])
-      .then(([cardData, priceData]) => {
+    setSupportData(null);
+    setMomentumData(null);
+
+    const cardReq   = fetch(`${API}/cards/${id}`).then(r => r.ok ? r.json() : Promise.reject(r.status));
+    const pricesReq = fetch(`${API}/cards/${id}/prices`).then(r => r.ok ? r.json() : Promise.reject(r.status));
+    const supportReq  = fetch(`${API}/analytics/support-lines`).then(r => r.ok ? r.json() : []).catch(() => []);
+    const momentumReq = fetch(`${API}/analytics/momentum`).then(r => r.ok ? r.json() : []).catch(() => []);
+
+    Promise.all([cardReq, pricesReq, supportReq, momentumReq])
+      .then(([cardData, priceData, supportLines, momentum]) => {
         setCard(cardData);
         setPrices(priceData);
+        setSupportData(supportLines.find(s => String(s.product_id) === String(id)) ?? null);
+        setMomentumData(momentum.find(m => String(m.product_id) === String(id)) ?? null);
         setLoading(false);
       })
       .catch(() => {
@@ -140,6 +149,90 @@ export default function CardDetailPage() {
           )}
         </div>
       </div>
+
+      {(supportData || momentumData) && (
+        <div className="analytics-section">
+          <h2 className="analytics-heading">Analytics</h2>
+          <div className="analytics-panels">
+
+            {supportData && (() => {
+              const gainAmt = supportData.breakout_price - supportData.current_price;
+              const gainPct = (gainAmt / supportData.current_price) * 100;
+              return (
+                <div className="analytics-panel support-panel">
+                  <div className="ap-header">
+                    <span className="ap-title">Support Line</span>
+                    <div className="ap-badges">
+                      {supportData.is_deep_value
+                        ? <span className="ap-badge deep-value">★ Deep Value</span>
+                        : <span className="ap-badge tier">{supportData.tier_label}</span>
+                      }
+                      {supportData.in_band && <span className="ap-badge in-band">In Band</span>}
+                    </div>
+                  </div>
+                  <div className="ap-stats">
+                    <div className="ap-stat">
+                      <span className="ap-stat-label">ATH</span>
+                      <span className="ap-stat-value">${supportData.ath.toFixed(2)}</span>
+                    </div>
+                    <div className="ap-stat">
+                      <span className="ap-stat-label">Drawdown</span>
+                      <span className="ap-stat-value loss">
+                        -{(supportData.drawdown_pct * 100).toFixed(1)}%
+                        <span className="ap-stat-sub"> (-${supportData.drawdown_amt.toFixed(2)})</span>
+                      </span>
+                    </div>
+                    <div className="ap-stat">
+                      <span className="ap-stat-label">Floor Median</span>
+                      <span className="ap-stat-value">${supportData.floor_median.toFixed(2)}</span>
+                    </div>
+                    <div className="ap-stat">
+                      <span className="ap-stat-label">Weeks on Floor</span>
+                      <span className="ap-stat-value">{supportData.floor_weeks}w</span>
+                    </div>
+                  </div>
+                  <div className="ap-breakout">
+                    <span className="ap-bt-label">Breakout target</span>
+                    <span className="ap-bt-price">${supportData.breakout_price.toFixed(2)}</span>
+                    <span className="ap-bt-gain">+${gainAmt.toFixed(2)} ({gainPct.toFixed(1)}%)</span>
+                  </div>
+                  <div className="ap-band-note">
+                    ±{(supportData.tier_band * 100).toFixed(0)}% band
+                  </div>
+                </div>
+              );
+            })()}
+
+            {momentumData && (() => {
+              const isPos = momentumData.momentum_30d >= 0;
+              const color = isPos ? '#22c55e' : '#ef4444';
+              const sign  = isPos ? '+' : '';
+              return (
+                <div className="analytics-panel momentum-panel">
+                  <div className="ap-header">
+                    <span className="ap-title">Momentum</span>
+                    <span className="ap-badge momentum" style={{ color, borderColor: color }}>
+                      {sign}{momentumData.momentum_30d.toFixed(1)}% · 30d
+                    </span>
+                  </div>
+                  <div className="ap-momentum-big" style={{ color }}>
+                    {sign}{momentumData.momentum_30d.toFixed(1)}%
+                  </div>
+                  <div className="ap-momentum-prices">
+                    <span className="ap-mp-entry">
+                      {momentumData.price_30d_ago != null ? `$${momentumData.price_30d_ago.toFixed(2)}` : '—'}
+                    </span>
+                    <span className="ap-mp-arrow">→</span>
+                    <span className="ap-mp-current">${momentumData.current_price.toFixed(2)}</span>
+                  </div>
+                  <div className="ap-momentum-label">30-day price change</div>
+                </div>
+              );
+            })()}
+
+          </div>
+        </div>
+      )}
 
       {allChartData.length > 0 && (
         <div className="chart-section">

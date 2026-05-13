@@ -118,11 +118,19 @@ export default function CardsPage() {
     let result = setFilter ? cards.filter(c => c.set_name === setFilter) : cards;
     if (rarityFilter) result = result.filter(c => c.rarity === rarityFilter);
     result = [...result].sort((a, b) => {
-      const av = a[sort.field] ?? '';
-      const bv = b[sort.field] ?? '';
-      const cmp = sort.field === 'latest_price'
-        ? parseFloat(av) - parseFloat(bv)
-        : String(av).localeCompare(String(bv));
+      if (sort.field === 'latest_price') {
+        const an = parseFloat(a.latest_price);
+        const bn = parseFloat(b.latest_price);
+        const aNull = isNaN(an);
+        const bNull = isNaN(bn);
+        if (aNull && bNull) return 0;
+        if (aNull) return 1;
+        if (bNull) return -1;
+        return sort.dir === 'asc' ? an - bn : bn - an;
+      }
+      const av = String(a[sort.field] ?? '');
+      const bv = String(b[sort.field] ?? '');
+      const cmp = av.localeCompare(bv);
       return sort.dir === 'asc' ? cmp : -cmp;
     });
     return result;
